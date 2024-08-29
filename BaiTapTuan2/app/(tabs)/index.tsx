@@ -18,8 +18,7 @@ export default function App() {
   }, [isMounted, router]);
 
   const handleLogout = () => {
-    // Bạn có thể thêm logic xóa token hoặc session ở đây nếu cần
-    router.replace('/(tabs)/LoginPage'); // Chuyển về trang đăng nhập
+    router.replace('/(tabs)/LoginPage'); 
   };
 
   return (
@@ -31,7 +30,7 @@ export default function App() {
       <Text>Name: Lê Trọng Dũng</Text>
       <Text>HomePage</Text>
       
-      {/* Nút Logout */}
+      {/* */}
       <View style={{ marginTop: 20 }}>
         <Button title="Logout" onPress={handleLogout} />
       </View>

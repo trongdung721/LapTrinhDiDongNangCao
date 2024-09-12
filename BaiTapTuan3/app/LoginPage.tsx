@@ -11,7 +11,7 @@ export default function LoginPage() {
 
   const handleLogin = async () => {
     try {
-      const response = await fetch('https://food-app-api-demo.onrender.com/api/users/login', {
+      const response = await fetch('https://realtime-chat-app-api-tbaf.onrender.com/v1/user/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -19,13 +19,16 @@ export default function LoginPage() {
         body: JSON.stringify({ email, password }),
       });
 
-      if (response.ok) {
-        const data = await response.json();
-        await AsyncStorage.setItem('userId', data.user._id); // Save the user ID
-        Alert.alert('Đăng nhập thành công!', `Chào mừng ${data.user.name}`);
-        router.push('/ProfilePage'); // Navigate to the HomePage
+      const data = await response.json();
+
+      if (response.ok && data.data && data.data.accessToken) {
+        // Lưu accessToken vào AsyncStorage
+        await AsyncStorage.setItem('accessToken', data.data.accessToken);
+
+        Alert.alert('Đăng nhập thành công!', `Chào mừng!`);
+        router.push('/ProfilePage'); // Điều hướng đến trang hồ sơ
       } else {
-        Alert.alert('Đăng nhập thất bại', 'Vui lòng kiểm tra lại email và mật khẩu');
+        Alert.alert('Đăng nhập thất bại', data.message || 'Vui lòng kiểm tra lại email và mật khẩu');
       }
     } catch (error) {
       Alert.alert('Lỗi', 'Có lỗi xảy ra. Vui lòng thử lại.');
@@ -40,6 +43,7 @@ export default function LoginPage() {
         value={email}
         onChangeText={setEmail}
         keyboardType="email-address"
+        placeholder="Nhập email của bạn"
       />
       <Text style={[t.textLg, t.fontBold, t.mB2]}>Mật khẩu:</Text>
       <TextInput
@@ -47,12 +51,21 @@ export default function LoginPage() {
         value={password}
         onChangeText={setPassword}
         secureTextEntry
+        placeholder="Nhập mật khẩu của bạn"
       />
-      <TouchableOpacity 
+      <TouchableOpacity
         style={[t.bgBlue500, t.roundedLg, t.pY3, t.mB5]}
         onPress={handleLogin}
       >
         <Text style={[t.textWhite, t.textCenter, t.fontBold]}>Đăng nhập</Text>
+      </TouchableOpacity>
+
+      {/* Thêm nút chuyển sang trang đăng ký */}
+      <TouchableOpacity 
+        style={[t.bgGray200, t.roundedLg, t.pY3]}
+        onPress={() => router.push('/RegisterPage')}  // Điều hướng sang trang đăng ký
+      >
+        <Text style={[t.textCenter, t.textBlue500]}>Chưa có tài khoản? Đăng ký</Text>
       </TouchableOpacity>
     </View>
   );

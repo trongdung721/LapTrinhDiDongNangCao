@@ -14,29 +14,37 @@ export default function LoginPage() {
 
   const handleLogin = async () => {
     try {
-      const response = await fetch('https://food-app-api-demo.onrender.com/api/users/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email, password }),
-      });
+      const response = await fetch(
+        "https://realtime-chat-app-api-tbaf.onrender.com/v1/user/login",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ email, password }),
+        }
+      );
 
       if (response.ok) {
         const data = await response.json();
-        Alert.alert('Đăng nhập thành công!', `Chào mừng ${data.user.name}`);
-        router.push('/');
+        // const accessToken = data.data.accessToken;
+        // await AsyncStorage.setItem("accessToken", data.data.accessToken);
+
+        Alert.alert("Login successful");
+
+        router.replace("/HomePage");
       } else {
-        Alert.alert('Đăng nhập thất bại', 'Vui lòng kiểm tra lại email và mật khẩu');
+        Alert.alert("Login failed!", "Please check email and password again!");
       }
     } catch (error) {
-      Alert.alert('Lỗi', 'Có lỗi xảy ra. Vui lòng thử lại.');
+      Alert.alert("Error", "An error occurred. Please try again." + error);
     }
   };
+  
 
   const handleSendOtp = async () => {
     try {
-      const response = await fetch('https://food-app-api-demo.onrender.com/api/users/forget-password', {
+      const response = await fetch('https://realtime-chat-app-api-tbaf.onrender.com/v1/user/forgot-password', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -58,7 +66,7 @@ export default function LoginPage() {
 
   const handleResetPassword = async () => {
     try {
-      const response = await fetch('https://food-app-api-demo.onrender.com/api/users/reset-password', {
+      const response = await fetch('https://realtime-chat-app-api-tbaf.onrender.com/v1/user/reset-password', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

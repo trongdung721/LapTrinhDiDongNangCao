@@ -3,29 +3,37 @@ import { View, Text, TextInput, Button, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
 
 export default function RegisterPage() {
-  const [name, setName] = useState<string>('');
+  const [displayName, setName] = useState<string>('');
   const [email, setEmail] = useState<string>('');
   const [password, setPassword] = useState<string>('');
+  const [phone, setPhone] = useState<string>('');
   const router = useRouter();
 
   const handleRegister = async () => {
     try {
-      const response = await fetch('https://food-app-api-demo.onrender.com/api/users/', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ name, email, password }),
-      });
+      const response = await fetch(
+        "https://realtime-chat-app-api-tbaf.onrender.com/v1/user/register",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ displayName, email, password, phone }),
+        }
+      );
 
       if (response.ok) {
-        Alert.alert('Đăng ký thành công!', 'Bạn có thể đăng nhập ngay bây giờ.');
-        router.push('/(tabs)/LoginPage');
+        Alert.alert("Success", "Account registered successfully.");
+        // Chuyển đến trang OTP và truyền email qua tham số
+        router.push({
+          pathname: '/OtpVerificationPage',
+          params: { email }, // Truyền email qua params
+        });
       } else {
-        Alert.alert('Đăng ký thất bại', 'Vui lòng kiểm tra lại thông tin.');
+        Alert.alert("Error", "Registration failed. Please try again.");
       }
     } catch (error) {
-      Alert.alert('Lỗi', 'Có lỗi xảy ra. Vui lòng thử lại.');
+      Alert.alert("Error", "An error occurred. Please try again.");
     }
   };
 
@@ -34,7 +42,7 @@ export default function RegisterPage() {
       <Text>Name:</Text>
       <TextInput
         style={{ borderBottomWidth: 1, marginBottom: 20 }}
-        value={name}
+        value={displayName}
         onChangeText={setName}
       />
       <Text>Email:</Text>
@@ -51,11 +59,18 @@ export default function RegisterPage() {
         onChangeText={setPassword}
         secureTextEntry
       />
+      <Text>Phone:</Text>
+      <TextInput
+        style={{ borderBottomWidth: 1, marginBottom: 20 }}
+        value={phone}
+        onChangeText={setPhone}
+        keyboardType="phone-pad"
+      />
       <View style={{ marginBottom: 20 }}>
         <Button title="Đăng ký" onPress={handleRegister} />
       </View>
       <View>
-        <Button title="Đã có tài khoản? Đăng nhập" onPress={() => router.push('/(tabs)/LoginPage')} />
+        <Button title="Đã có tài khoản? Đăng nhập" onPress={() => router.push('/LoginPage')} />
       </View>
     </View>
   );

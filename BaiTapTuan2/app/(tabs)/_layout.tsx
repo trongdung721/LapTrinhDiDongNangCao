@@ -24,6 +24,10 @@ export default function TabLayout() {
         name="HomePage"
         options={{ headerShown: false }}
     />
+    <Stack.Screen
+        name="OtpVerificationPage"
+        options={{ headerShown: false }}
+    />
 </Stack>
   );
 }

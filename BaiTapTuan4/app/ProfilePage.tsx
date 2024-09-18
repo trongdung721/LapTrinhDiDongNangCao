@@ -3,20 +3,24 @@ import { View, Text, Image, Alert, Modal, TextInput, TouchableOpacity } from 're
 import { useRouter } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { t } from 'react-native-tailwindcss';
+import * as ImagePicker from 'expo-image-picker';
 
-interface User {
-  _id: string;
-  name: string;
+
+interface UserData {
+  displayName: string;
   email: string;
-  image?: string;
+  image?: string; // có thể null hoặc undefined
+  birthDate?: string; // có thể null hoặc undefined
 }
+
 
 export default function ProfilePage() {
   const router = useRouter();
-  const [userData, setUserData] = useState<User | null>(null);
+  const [userData, setUserData] = useState<UserData | null>(null);
   const [isModalVisible, setIsModalVisible] = useState(false);
-  const [name, setName] = useState('');
+  const [displayName, setName] = useState('');
   const [email, setEmail] = useState('');
+  const [birthDate, setBirthDate] = useState(''); // Add birthDate state
   const [image, setImage] = useState('');
 
   useEffect(() => {
@@ -38,8 +42,9 @@ export default function ProfilePage() {
         if (response.ok) {
           const data = await response.json();
           setUserData(data.data);
-          setName(data.data.name);
+          setName(data.data.displayName);
           setEmail(data.data.email);
+          setBirthDate(data.data.birthDate); // Set birthDate
           setImage(data.data.image || '');
         } else {
           Alert.alert("Error", "Failed to fetch user data.");
@@ -57,27 +62,38 @@ export default function ProfilePage() {
     router.replace('/LoginPage');
   };
 
+  const [loading, setLoading] = useState(false);
+
   const handleUpdateProfile = async () => {
     try {
+      setLoading(true); // Bắt đầu loading
       const accessToken = await AsyncStorage.getItem('accessToken');
       if (!accessToken) {
         Alert.alert("Error", "User not found.");
         return;
       }
+  
+      let formData = new FormData();
+      formData.append('displayName', displayName);
+      formData.append('email', email);
+      formData.append('birthDate', birthDate);
 
+      // Kiểm tra userData không null và kiểm tra nếu người dùng thay đổi ảnh
+      if (image && userData?.image !== image) {
+        const response = await fetch(image);
+        const blob = await response.blob();
+        formData.append('image', blob, 'profile.jpg');
+      }
+
+  
       const response = await fetch(`https://realtime-chat-app-api-tbaf.onrender.com/v1/user/update-profile`, {
         method: 'PUT',
         headers: {
-          'Content-Type': 'application/json',
           'Authorization': `Bearer ${accessToken}`,
         },
-        body: JSON.stringify({
-          name,
-          email,
-          image,
-        }),
+        body: formData,
       });
-
+  
       if (response.ok) {
         const updatedData = await response.json();
         setUserData(updatedData.data);
@@ -87,9 +103,30 @@ export default function ProfilePage() {
         Alert.alert('Update failed', 'Please check your input and try again.');
       }
     } catch (error) {
-      Alert.alert('Error', 'An error occurred while updating the profile.');
+      Alert.alert('Error', 'An error occurred while updating the profile: ');
+    } finally {
+      setLoading(false); // Dừng loading
     }
   };
+  
+  
+
+  const pickImage = async () => {
+    let result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [4, 3],
+      quality: 1,
+    });
+  
+    // Kiểm tra kết quả trả về và lấy URI từ assets
+    if (!result.canceled && result.assets && result.assets.length > 0) {
+      setImage(result.assets[0].uri);  // Truy cập URI từ assets
+    } else {
+      Alert.alert("You didn't select any image.");
+    }
+  };
+  
 
   if (!userData) {
     return (
@@ -102,12 +139,17 @@ export default function ProfilePage() {
   return (
     <View style={[t.flex1, t.p5, t.bgWhite]}>
       <View style={[t.itemsCenter]}>
-        <Image
-          source={{ uri: userData.image ? userData.image : 'https://example.com/profile.jpg' }}
-          style={[t.w32, t.h32, t.roundedFull, t.mB4]}
-        />
-        <Text style={[t.text2xl, t.fontBold, t.mB2]}>Name: {userData.name}</Text>
-        <Text style={[t.textLg, t.mB2]}>Email: {userData.email}</Text>
+      <Image
+        source={{ uri: userData?.image ? userData.image : 'https://example.com/profile.jpg' }}
+        style={[t.w32, t.h32, t.roundedFull, t.mB4]}
+      />
+
+
+<Text style={[t.text2xl, t.fontBold, t.mB2]}>Name: {userData?.displayName}</Text>
+
+        <Text style={[t.textLg, t.mB2]}>Email: {userData?.email}</Text>
+        <Text style={[t.textLg, t.mB2]}>Birthday: {userData?.birthDate}</Text>
+
       </View>
 
       <TouchableOpacity
@@ -134,7 +176,7 @@ export default function ProfilePage() {
 
           <TextInput
             style={[t.borderB, t.borderGray300, t.mB4, t.pY2, t.textLg]}
-            value={name}
+            value={displayName}
             onChangeText={setName}
             placeholder="Name"
           />
@@ -149,10 +191,17 @@ export default function ProfilePage() {
 
           <TextInput
             style={[t.borderB, t.borderGray300, t.mB4, t.pY2, t.textLg]}
-            value={image}
-            onChangeText={setImage}
-            placeholder="Profile Image URL"
+            value={birthDate}
+            onChangeText={setBirthDate}
+            placeholder="Birthdate"
           />
+
+          <TouchableOpacity
+            style={[t.bgBlue500, t.pY3, t.pX5, t.roundedLg]}
+            onPress={pickImage}
+          >
+            <Text style={[t.textWhite, t.textCenter, t.fontBold]}>Choose Profile Image</Text>
+          </TouchableOpacity>
 
           <View style={[t.flexRow, t.justifyBetween, t.mT4]}>
             <TouchableOpacity

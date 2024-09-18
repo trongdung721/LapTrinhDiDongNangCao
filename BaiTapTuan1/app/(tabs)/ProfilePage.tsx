@@ -5,27 +5,18 @@ import { useRouter } from 'expo-router';
 export default function ProfilePage() {
   const router = useRouter();
   const avatar = require('../../assets/images/avatar.jpg');
-
-
   const [timeLeft, setTimeLeft] = useState(10);
 
   useEffect(() => {
-
-    setTimeLeft(10);
-
-    const interval = setInterval(() => {
-      setTimeLeft(prevTime => {
-        if (prevTime <= 1) {
-          clearInterval(interval);
-          router.push('/'); 
-          return 0; 
-        }
-        return prevTime - 1; 
-      });
-    }, 1000);
-
-    return () => clearInterval(interval);
-  }, [router]);
+    if (timeLeft > 0) {
+      const timer = setTimeout(() => {
+        setTimeLeft(timeLeft - 1);
+      }, 1000);
+      return () => clearTimeout(timer);
+    } else {
+      router.push('/HomePage');
+    }
+  }, [timeLeft, router]);
 
   return (
     <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: 'white' }}>
